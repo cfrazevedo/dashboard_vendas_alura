@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+from time import sleep
 
 st.set_page_config(layout = 'wide')
 
@@ -30,8 +31,14 @@ else:
     ano = st.sidebar.slider('Ano', 2020, 2023)
 
 query_string = {'regiao': regiao.lower(), 'ano': ano}
-response = requests.get(url, params=query_string)
-dados = pd.DataFrame.from_dict(response.json())
+
+for ntry in range(5):
+    try:
+        response = requests.get(url, params=query_string)
+        dados = pd.DataFrame.from_dict(response.json())
+    except requests.exceptions.RequestException:
+        sleep(3)
+
 dados['Data da Compra'] = pd.to_datetime(dados['Data da Compra'], format = '%d/%m/%Y')
 
 filtro_vendedores = st.sidebar.multiselect('Vendedores', dados['Vendedor'].unique())
